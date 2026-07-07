@@ -1,0 +1,14 @@
+{
+  "name": "cashglade-coach-proxy",
+  "version": "0.1.0",
+  "description": "Proxy to safely call Anthropic or OpenAI from the Cashglade frontend without exposing API keys",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "author": "Cashglade",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
