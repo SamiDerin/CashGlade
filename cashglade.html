@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cashglade — Learn to Save, Invest, and Earn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0F1620;
+  --ink-2:#151F2E;
+  --panel:#1B2634;
+  --line:#2B3A4F;
+  --paper:#EFF1EC;
+  --text:#E7ECF2;
+  --text-dim:#8B9AAF;
+  --growth:#2FBF8F;
+  --loss:#FF6B6B;
+  --gold:#E8B34D;
+  --accent:#6C8CFF;
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--ink);color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;letter-spacing:-0.01em;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+a{color:var(--accent);}
+button{font-family:'Inter',sans-serif;cursor:pointer;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+/* ---- Ticker tape ---- */
+.ticker-wrap{background:var(--ink-2);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;position:relative;height:34px;}
+.ticker{display:inline-flex;gap:28px;padding-left:16px;position:absolute;animation:scroll 38s linear infinite;}
+@keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.tick-item{font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:34px;color:var(--text-dim);}
+.tick-item b{color:var(--text);font-weight:600;margin-right:6px;}
+.tick-up{color:var(--growth);}
+.tick-down{color:var(--loss);}
+@media (prefers-reduced-motion: reduce){.ticker{animation:none;}}
+
+/* ---- Nav ---- */
+header.top{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--line);}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo .mark{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--growth),var(--accent));display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;color:#0B0F14;font-size:15px;}
+.logo span{font-family:'Space Grotesk';font-weight:600;font-size:18px;}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;}
+nav.tabs button{background:transparent;border:1px solid transparent;color:var(--text-dim);padding:8px 14px;border-radius:8px;font-size:14px;font-weight:500;transition:all .15s;}
+nav.tabs button:hover{color:var(--text);}
+nav.tabs button.active{background:var(--panel);color:var(--text);border-color:var(--line);}
+
+main{max-width:1180px;margin:0 auto;padding:28px;}
+.section{display:none;}
+.section.active{display:block;animation:fade .25s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+.hero{padding:34px 0 26px;border-bottom:1px solid var(--line);margin-bottom:26px;}
+.hero h1{font-size:34px;margin:0 0 10px;}
+.hero p{color:var(--text-dim);max-width:620px;font-size:15px;line-height:1.6;margin:0;}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+
+.grid{display:grid;gap:16px;}
+.g2{grid-template-columns:1fr 1fr;}
+.g3{grid-template-columns:repeat(3,1fr);}
+@media (max-width:820px){.g2,.g3{grid-template-columns:1fr;}}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;}
+.card h3{margin:0 0 8px;font-size:16px;}
+.card p{color:var(--text-dim);font-size:14px;line-height:1.6;margin:0;}
+.pill{display:inline-block;font-size:11px;font-family:'IBM Plex Mono',monospace;padding:3px 8px;border-radius:20px;background:var(--ink-2);border:1px solid var(--line);color:var(--text-dim);}
+
+/* ---- Learn accordion ---- */
+.acc-item{border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;background:var(--panel);}
+.acc-head{padding:16px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.acc-head h3{margin:0;font-size:15.5px;}
+.acc-head .chev{color:var(--text-dim);transition:transform .2s;}
+.acc-item.open .chev{transform:rotate(180deg);}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .25s ease;padding:0 18px;}
+.acc-item.open .acc-body{padding-bottom:16px;}
+.acc-body p{color:var(--text-dim);font-size:14px;line-height:1.7;margin:0 0 10px;}
+
+/* ---- Simulator ---- */
+.class-pills{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.class-pills button{background:var(--ink-2);border:1px solid var(--line);color:var(--text-dim);padding:7px 14px;border-radius:20px;font-size:13px;}
+.class-pills button.active{background:var(--accent);color:#0B0F14;border-color:var(--accent);font-weight:600;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{text-align:left;color:var(--text-dim);font-weight:500;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--line);}
+td{padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+.sym{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.up{color:var(--growth);}
+.down{color:var(--loss);}
+.spark{width:70px;height:24px;display:block;}
+.mini-btn{background:var(--ink-2);border:1px solid var(--line);color:var(--text);padding:5px 10px;border-radius:6px;font-size:12px;}
+.mini-btn:hover{border-color:var(--accent);}
+.trade-box{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:14px;}
+.trade-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+input[type=number],input[type=text],select{background:var(--ink);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:6px;font-size:13.5px;font-family:'IBM Plex Mono',monospace;}
+.btn{padding:9px 16px;border-radius:7px;border:none;font-weight:600;font-size:13.5px;}
+.btn-buy{background:var(--growth);color:#0B0F14;}
+.btn-sell{background:var(--loss);color:#0B0F14;}
+.btn-secondary{background:transparent;border:1px solid var(--line);color:var(--text);}
+#tv_chart{width:100%;height:440px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);}
+.stat-row{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:16px;}
+.stat{min-width:120px;}
+.stat .label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;}
+.stat .val{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;}
+.msg-empty{color:var(--text-dim);font-size:13.5px;padding:16px;text-align:center;}
+
+/* ---- Games ---- */
+.game-tabs{display:flex;gap:8px;margin-bottom:18px;}
+.game-tabs button{background:var(--ink-2);border:1px solid var(--line);color:var(--text-dim);padding:8px 14px;border-radius:8px;font-size:13.5px;}
+.game-tabs button.active{background:var(--panel);color:var(--text);border-color:var(--accent);}
+.slider-row{margin-bottom:14px;}
+.slider-row label{display:flex;justify-content:space-between;font-size:13px;color:var(--text-dim);margin-bottom:6px;}
+.slider-row label b{color:var(--text);font-family:'IBM Plex Mono',monospace;}
+input[type=range]{width:100%;accent-color:var(--accent);}
+.log-line{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-dim);border-bottom:1px solid var(--line);padding:6px 0;}
+.log-line.good{color:var(--growth);}
+.log-line.bad{color:var(--loss);}
+svg.chart{width:100%;height:180px;background:var(--ink-2);border-radius:8px;border:1px solid var(--line);}
+
+/* ---- AI Coach ---- */
+#chat-log{height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--ink-2);padding:16px;margin-bottom:12px;}
+.bubble{max-width:78%;padding:10px 13px;border-radius:10px;margin-bottom:10px;font-size:14px;line-height:1.55;}
+.bubble.user{background:var(--accent);color:#0B0F14;margin-left:auto;}
+.bubble.ai{background:var(--panel);border:1px solid var(--line);}
+.chat-input-row{display:flex;gap:8px;}
+.chat-input-row input{flex:1;font-family:'Inter',sans-serif;padding:12px;}
+.disclaimer{font-size:11.5px;color:var(--text-dim);margin-top:8px;}
+
+footer{text-align:center;padding:30px;color:var(--text-dim);font-size:12px;border-top:1px solid var(--line);margin-top:40px;}
+</style>
+</head>
+<body>
+
+<div class="ticker-wrap"><div class="ticker" id="tickerTape"></div></div>
+
+<header class="top">
+  <div class="logo"><div class="mark">C</div><span>Cashglade</span></div>
+  <nav class="tabs" id="navTabs">
+    <button data-tab="home" class="active">Home</button>
+    <button data-tab="learn">Learn</button>
+    <button data-tab="simulate">Simulate</button>
+    <button data-tab="games">Games</button>
+    <button data-tab="coach">AI Coach</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- HOME -->
+  <section class="section active" id="tab-home">
+    <div class="hero">
+      <div class="eyebrow">Practice with fake money · Learn with real skills</div>
+      <h1>Learn to save, invest, and earn — before it costs you anything.</h1>
+      <p>Cashglade is a practice ground for money skills. Trade a simulated market across stocks, crypto, commodities, forex, and futures, play short games that teach budgeting and business, and ask an AI coach whenever you're stuck. No real money, no real risk, real understanding.</p>
+    </div>
+    <div class="grid g3">
+      <div class="card"><span class="pill">01 · Simulate</span><h3 style="margin-top:10px">Trade a live-moving market</h3><p>Buy and sell simulated stocks, crypto, commodities, forex, and futures with $10,000 in practice cash. Charts are powered by real TradingView data.</p></div>
+      <div class="card"><span class="pill">02 · Play</span><h3 style="margin-top:10px">Learn by playing</h3><p>Run a budget through a chaotic year, price a tiny business day by day, and watch compound interest do its slow, quiet work.</p></div>
+      <div class="card"><span class="pill">03 · Ask</span><h3 style="margin-top:10px">A coach in your pocket</h3><p>Confused about an index fund or an options contract? Ask the AI coach — it explains, it doesn't sell.</p></div>
+    </div>
+  </section>
+
+  <!-- LEARN -->
+  <section class="section" id="tab-learn">
+    <div class="hero" style="padding-top:0">
+      <div class="eyebrow">Learn</div>
+      <h1 style="font-size:26px">The short version of everything you need first</h1>
+      <p>Six ideas that do most of the work. Read them, then go break them in the simulator.</p>
+    </div>
+    <div id="accWrap"></div>
+  </section>
+
+  <!-- SIMULATE -->
+  <section class="section" id="tab-simulate">
+    <div class="hero" style="padding-top:0">
+      <div class="eyebrow">Simulate</div>
+      <h1 style="font-size:26px">Practice trading, zero real risk</h1>
+      <p>Prices here move on their own simulated engine so you always have something to react to. Pull up the real chart on the right before you trade.</p>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><div class="label">Cash</div><div class="val mono" id="statCash">$0</div></div>
+      <div class="stat"><div class="label">Holdings Value</div><div class="val mono" id="statHold">$0</div></div>
+      <div class="stat"><div class="label">Total Equity</div><div class="val mono" id="statEquity">$0</div></div>
+      <div class="stat"><div class="label">Total P&L</div><div class="val mono" id="statPnl">$0</div></div>
+      <div class="stat"><button class="btn btn-secondary" id="resetPortfolio">Reset portfolio</button></div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <div class="class-pills" id="classPills"></div>
+        <table>
+          <thead><tr><th>Symbol</th><th>Price</th><th>24h</th><th>Trend</th><th></th></tr></thead>
+          <tbody id="marketBody"></tbody>
+        </table>
+
+        <div class="trade-box">
+          <div class="trade-row">
+            <span class="sym mono" id="tradeSym">—</span>
+            <input type="number" id="tradeQty" placeholder="Qty" min="0" step="1" style="width:90px">
+            <button class="btn btn-buy" id="btnBuy">Buy</button>
+            <button class="btn btn-sell" id="btnSell">Sell</button>
+            <span class="mono" id="tradeCost" style="color:var(--text-dim);font-size:12.5px"></span>
+          </div>
+        </div>
+
+        <h3 style="margin-top:22px;font-size:14px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em">Your Holdings</h3>
+        <table>
+          <thead><tr><th>Symbol</th><th>Qty</th><th>Avg Cost</th><th>Price</th><th>P&L</th></tr></thead>
+          <tbody id="holdingsBody"><tr><td colspan="5" class="msg-empty">No positions yet — buy something on the left.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:14px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Real chart · TradingView</h3>
+        <div id="tv_chart"></div>
+        <p style="margin-top:10px;color:var(--text-dim);font-size:12px">Live market data from TradingView. Your simulated positions above are independent of this chart's real prices.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAMES -->
+  <section class="section" id="tab-games">
+    <div class="hero" style="padding-top:0">
+      <div class="eyebrow">Games</div>
+      <h1 style="font-size:26px">Small games, real habits</h1>
+      <p>Three short games. Each one teaches a single money skill by making you feel the consequence of a decision, fast.</p>
+    </div>
+    <div class="game-tabs" id="gameTabs">
+      <button data-g="budget" class="active">Budget Survivor</button>
+      <button data-g="biz">Lemonade Stand</button>
+      <button data-g="compound">Compound Machine</button>
+    </div>
+
+    <div id="game-budget" class="card">
+      <h3>Budget Survivor — 12 months, one income</h3>
+      <p style="margin-bottom:16px">You earn <b class="mono" id="budgetIncome">$4,200</b>/month. Allocate it below, then advance a month at a time. Random life events will test your choices.</p>
+      <div id="budgetSliders"></div>
+      <div style="display:flex;gap:10px;margin:14px 0;align-items:center">
+        <button class="btn btn-secondary" id="budgetNext">Advance month →</button>
+        <button class="btn btn-secondary" id="budgetReset">Restart</button>
+        <span class="mono" id="budgetMonthLbl" style="color:var(--text-dim)">Month 0 / 12</span>
+      </div>
+      <svg class="chart" id="budgetChart"></svg>
+      <div id="budgetLog" style="margin-top:12px;max-height:160px;overflow-y:auto"></div>
+    </div>
+
+    <div id="game-biz" class="card" style="display:none">
+      <h3>Lemonade Stand — 10 days to build a tiny business</h3>
+      <p style="margin-bottom:16px">Starting cash: <b class="mono">$20</b>. Each cup costs $0.30 to make. Set your price and how many cups to make, then run the day.</p>
+      <div class="slider-row"><label>Price per cup <b id="bizPriceLbl">$1.00</b></label><input type="range" id="bizPrice" min="0.5" max="3" step="0.1" value="1"></div>
+      <div class="slider-row"><label>Cups to make <b id="bizCupsLbl">30</b></label><input type="range" id="bizCups" min="0" max="120" step="5" value="30"></div>
+      <div style="display:flex;gap:10px;margin:14px 0;align-items:center">
+        <button class="btn btn-buy" id="bizRunDay">Run day →</button>
+        <button class="btn btn-secondary" id="bizReset">Restart</button>
+        <span class="mono" id="bizDayLbl" style="color:var(--text-dim)">Day 0 / 10 · Cash $20.00</span>
+      </div>
+      <svg class="chart" id="bizChart"></svg>
+      <div id="bizLog" style="margin-top:12px;max-height:160px;overflow-y:auto"></div>
+    </div>
+
+    <div id="game-compound" class="card" style="display:none">
+      <h3>Compound Machine — watch interest compound</h3>
+      <div class="slider-row"><label>Starting deposit <b id="cInitLbl">$1,000</b></label><input type="range" id="cInit" min="0" max="20000" step="100" value="1000"></div>
+      <div class="slider-row"><label>Monthly contribution <b id="cMonLbl">$200</b></label><input type="range" id="cMon" min="0" max="2000" step="25" value="200"></div>
+      <div class="slider-row"><label>Annual return <b id="cRateLbl">7%</b></label><input type="range" id="cRate" min="0" max="15" step="0.5" value="7"></div>
+      <div class="slider-row"><label>Years <b id="cYearsLbl">20</b></label><input type="range" id="cYears" min="1" max="40" step="1" value="20"></div>
+      <svg class="chart" id="compChart" style="height:220px"></svg>
+      <div class="stat-row" style="margin-top:14px">
+        <div class="stat"><div class="label">Total contributed</div><div class="val mono" id="cContrib">$0</div></div>
+        <div class="stat"><div class="label">Growth earned</div><div class="val mono" id="cGrowth">$0</div></div>
+        <div class="stat"><div class="label">Final value</div><div class="val mono" id="cFinal">$0</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI COACH -->
+  <section class="section" id="tab-coach">
+    <div class="hero" style="padding-top:0">
+      <div class="eyebrow">AI Coach</div>
+      <h1 style="font-size:26px">Ask anything about money</h1>
+      <p>Explain a term, walk through a scenario, or sanity-check an idea. General education only — not personalized financial advice.</p>
+    </div>
+    <div id="chat-log"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="e.g. What's the difference between a stock and a bond?">
+      <button class="btn btn-buy" id="chatSend">Ask</button>
+    </div>
+    <div class="disclaimer">The coach gives general, educational information. It doesn't know your personal situation and isn't a substitute for a licensed financial advisor.</div>
+  </section>
+
+</main>
+<footer>Cashglade — a practice sandbox for money skills. All balances are simulated. No real money is ever involved.</footer>
+
+<script>
+/* ================= NAV ================= */
+document.getElementById('navTabs').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#navTabs button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.querySelectorAll('main .section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+b.dataset.tab).classList.add('active');
+  if(b.dataset.tab==='simulate') initTVWidget();
+});
+
+/* ================= LEARN CONTENT ================= */
+const LESSONS = [
+  {t:"Why saving comes first", b:"Before anything else, build a cash cushion worth three to six months of essential expenses. It's not meant to grow — it's meant to absorb shocks (a job loss, a car repair) without forcing you to sell investments at a bad time or go into debt. Keep it somewhere boring and easy to access, like a high-yield savings account."},
+  {t:"The quiet power of compound interest", b:"Compound interest is interest earned on interest. A dollar invested today doesn't just earn a return this year — next year it earns a return on the original dollar plus last year's gain, and so on. The effect looks small at first and enormous after a decade or two. The two levers that matter most are how early you start and how consistently you contribute, more than picking the perfect investment."},
+  {t:"Investing basics: what you're actually buying", b:"A stock is a small ownership slice of a company. A bond is a loan you make to a company or government that pays you interest. An index fund bundles hundreds or thousands of stocks or bonds into one purchase, so one bad company barely dents you. Most long-term investors are better served owning a diversified, low-cost fund than trying to pick individual winners."},
+  {t:"Risk isn't the same across markets", b:"Stocks, crypto, commodities, forex, and futures all carry different risk profiles. Broad stock index funds have historically rewarded patience. Crypto and individual commodities can swing dramatically in short periods. Forex and futures are often traded with leverage, meaning small price moves can produce large gains or losses relative to the money you put in. Practice with these in the simulator before ever considering them with real money, and only risk what you can afford to lose."},
+  {t:"Making more money: the other half of the equation", b:"Saving and investing only work with money to work with. Growing your income tends to move the needle faster than trimming expenses: building a skill that's in demand, asking for a raise with evidence of your impact, freelancing, or starting a small side business. Even a modest side income, invested consistently, compounds the same way a paycheck does."},
+  {t:"A simple budgeting rule to start with", b:"The 50/30/20 rule is a rough starting split: 50% of take-home income to needs (rent, food, utilities), 30% to wants (eating out, hobbies, subscriptions), and 20% to savings and debt paydown. It's a default to adjust, not a law — the goal is a percentage you're actually saving every month, automatically, before you can spend it."}
+];
+const accWrap = document.getElementById('accWrap');
+LESSONS.forEach((l,i)=>{
+  const div = document.createElement('div');
+  div.className='acc-item'+(i===0?' open':'');
+  div.innerHTML = `<div class="acc-head"><h3>${l.t}</h3><span class="chev">⌄</span></div><div class="acc-body"><p>${l.b}</p></div>`;
+  div.querySelector('.acc-head').addEventListener('click',()=>{
+    const wasOpen = div.classList.contains('open');
+    div.classList.toggle('open');
+    const body = div.querySelector('.acc-body');
+    body.style.maxHeight = (!wasOpen)? body.scrollHeight+'px':'0px';
+  });
+  accWrap.appendChild(div);
+});
+setTimeout(()=>{document.querySelectorAll('.acc-item.open .acc-body').forEach(b=>b.style.maxHeight=b.scrollHeight+'px');},50);
+
+/* ================= MARKET SIMULATION ================= */
+const MARKETS = {
+  stocks: [
+    {sym:'AAPL', name:'Apple', price:196.4, vol:0.006, tv:'NASDAQ:AAPL'},
+    {sym:'TSLA', name:'Tesla', price:242.1, vol:0.014, tv:'NASDAQ:TSLA'},
+    {sym:'MSFT', name:'Microsoft', price:428.7, vol:0.005, tv:'NASDAQ:MSFT'},
+    {sym:'AMZN', name:'Amazon', price:186.3, vol:0.008, tv:'NASDAQ:AMZN'},
+    {sym:'NVDA', name:'Nvidia', price:132.5, vol:0.015, tv:'NASDAQ:NVDA'}
+  ],
+  crypto: [
+    {sym:'BTC', name:'Bitcoin', price:63500, vol:0.02, tv:'BINANCE:BTCUSDT'},
+    {sym:'ETH', name:'Ethereum', price:3450, vol:0.024, tv:'BINANCE:ETHUSDT'},
+    {sym:'SOL', name:'Solana', price:148, vol:0.03, tv:'BINANCE:SOLUSDT'},
+    {sym:'DOGE', name:'Dogecoin', price:0.14, vol:0.04, tv:'BINANCE:DOGEUSDT'}
+  ],
+  commodities: [
+    {sym:'GOLD', name:'Gold', price:2380, vol:0.006, tv:'TVC:GOLD'},
+    {sym:'SILVER', name:'Silver', price:28.4, vol:0.01, tv:'TVC:SILVER'},
+    {sym:'OIL', name:'Crude Oil', price:78.6, vol:0.012, tv:'TVC:USOIL'},
+    {sym:'NATGAS', name:'Natural Gas', price:2.65, vol:0.02, tv:'TVC:UKOIL'}
+  ],
+  forex: [
+    {sym:'EURUSD', name:'Euro / US Dollar', price:1.082, vol:0.003, tv:'FX:EURUSD'},
+    {sym:'GBPUSD', name:'Pound / US Dollar', price:1.267, vol:0.003, tv:'FX:GBPUSD'},
+    {sym:'USDJPY', name:'US Dollar / Yen', price:156.2, vol:0.003, tv:'FX:USDJPY'},
+    {sym:'AUDUSD', name:'Aussie / US Dollar', price:0.664, vol:0.004, tv:'FX:AUDUSD'}
+  ],
+  futures: [
+    {sym:'ES', name:'S&P 500 Futures', price:5540, vol:0.006, tv:'CME_MINI:ES1!'},
+    {sym:'CL', name:'Crude Oil Futures', price:78.9, vol:0.013, tv:'NYMEX:CL1!'},
+    {sym:'GC', name:'Gold Futures', price:2385, vol:0.006, tv:'COMEX:GC1!'},
+    {sym:'ZC', name:'Corn Futures', price:445, vol:0.015, tv:'CBOT:ZC1!'}
+  ]
+};
+const CLASS_LABELS = {stocks:'Stocks', crypto:'Crypto', commodities:'Commodities', forex:'Forex', futures:'Futures'};
+let currentClass = 'stocks';
+let selectedSym = null;
+
+// history + base for sparkline
+Object.values(MARKETS).flat().forEach(a=>{ a.hist=[a.price]; a.base=a.price; });
+
+function allAssets(){ return Object.values(MARKETS).flat(); }
+function findAsset(sym){ return allAssets().find(a=>a.sym===sym); }
+
+function tickMarket(){
+  allAssets().forEach(a=>{
+    const drift = (Math.random()-0.5)*2*a.vol;
+    a.price = Math.max(0.0001, a.price*(1+drift));
+    a.hist.push(a.price);
+    if(a.hist.length>30) a.hist.shift();
+  });
+  renderTicker();
+  renderMarketTable();
+  renderHoldings();
+}
+
+function fmt(n, digits){
+  if(digits===undefined) digits = n>=100?2:(n>=1?4:6);
+  return '$'+Number(n).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits: n<1?6:2});
+}
+
+function renderTicker(){
+  const el = document.getElementById('tickerTape');
+  const items = allAssets().map(a=>{
+    const chg = ((a.price - a.hist[0])/a.hist[0]*100);
+    const cls = chg>=0?'tick-up':'tick-down';
+    return `<span class="tick-item"><b>${a.sym}</b><span class="${cls}">${fmt(a.price)} ${chg>=0?'▲':'▼'}${Math.abs(chg).toFixed(2)}%</span></span>`;
+  });
+  el.innerHTML = items.join('') + items.join(''); // duplicate for seamless loop
+}
+
+function sparkPath(hist){
+  const w=70,h=24; const min=Math.min(...hist), max=Math.max(...hist);
+  const range = (max-min)||1;
+  const pts = hist.map((v,i)=>{
+    const x = (i/(hist.length-1||1))*w;
+    const y = h - ((v-min)/range)*h;
+    return x.toFixed(1)+','+y.toFixed(1);
+  }).join(' ');
+  const up = hist[hist.length-1] >= hist[0];
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${up?'#2FBF8F':'#FF6B6B'}" stroke-width="1.6"/></svg>`;
+}
+
+function renderMarketTable(){
+  const body = document.getElementById('marketBody');
+  const list = MARKETS[currentClass];
+  if(!selectedSym || !list.find(a=>a.sym===selectedSym)) selectedSym = list[0].sym;
+  body.innerHTML = list.map(a=>{
+    const chg = ((a.price-a.hist[0])/a.hist[0]*100);
+    const cls = chg>=0?'up':'down';
+    return `<tr>
+      <td><span class="sym">${a.sym}</span><br><span style="color:var(--text-dim);font-size:11.5px">${a.name}</span></td>
+      <td class="mono">${fmt(a.price)}</td>
+      <td class="mono ${cls}">${chg>=0?'+':''}${chg.toFixed(2)}%</td>
+      <td>${sparkPath(a.hist)}</td>
+      <td><button class="mini-btn" data-sym="${a.sym}">Trade</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tradeSym').textContent = selectedSym;
+  updateTradeCost();
+}
+
+document.getElementById('marketBody').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  selectedSym = b.dataset.sym;
+  document.getElementById('tradeSym').textContent = selectedSym;
+  updateTradeCost();
+  initTVWidget();
+});
+
+const classPillsEl = document.getElementById('classPills');
+Object.keys(MARKETS).forEach(k=>{
+  const b = document.createElement('button');
+  b.textContent = CLASS_LABELS[k];
+  b.dataset.cls = k;
+  if(k===currentClass) b.classList.add('active');
+  b.addEventListener('click',()=>{
+    currentClass = k; selectedSym=null;
+    document.querySelectorAll('#classPills button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    renderMarketTable();
+    initTVWidget();
+  });
+  classPillsEl.appendChild(b);
+});
+
+/* ---- portfolio ---- */
+let portfolio = { cash: 10000, holdings: {} }; // holdings[sym] = {qty, avgCost}
+
+async function loadPortfolio(){
+  try{
+    const res = await window.storage.get('portfolio', false);
+    if(res && res.value) portfolio = JSON.parse(res.value);
+  }catch(e){ /* no saved portfolio yet */ }
+  renderAll();
+}
+async function savePortfolio(){
+  try{ await window.storage.set('portfolio', JSON.stringify(portfolio), false); }catch(e){}
+}
+
+function updateTradeCost(){
+  const qty = Number(document.getElementById('tradeQty').value)||0;
+  const a = findAsset(selectedSym);
+  if(!a) return;
+  document.getElementById('tradeCost').textContent = qty>0 ? `≈ ${fmt(qty*a.price)}` : '';
+}
+document.getElementById('tradeQty').addEventListener('input', updateTradeCost);
+
+document.getElementById('btnBuy').addEventListener('click',()=>{
+  const qty = Number(document.getElementById('tradeQty').value);
+  const a = findAsset(selectedSym);
+  if(!a || !qty || qty<=0) return;
+  const cost = qty*a.price;
+  if(cost > portfolio.cash){ alert("Not enough cash for that trade."); return; }
+  portfolio.cash -= cost;
+  const h = portfolio.holdings[a.sym] || {qty:0, avgCost:0};
+  h.avgCost = (h.avgCost*h.qty + cost) / (h.qty+qty);
+  h.qty += qty;
+  portfolio.holdings[a.sym] = h;
+  savePortfolio(); renderAll();
+});
+document.getElementById('btnSell').addEventListener('click',()=>{
+  const qty = Number(document.getElementById('tradeQty').value);
+  const a = findAsset(selectedSym);
+  const h = portfolio.holdings[a.sym];
+  if(!a || !qty || qty<=0 || !h || h.qty<qty){ alert("You don't own enough of this to sell that much."); return; }
+  portfolio.cash += qty*a.price;
+  h.qty -= qty;
+  if(h.qty<=0) delete portfolio.holdings[a.sym];
+  savePortfolio(); renderAll();
+});
+document.getElementById('resetPortfolio').addEventListener('click',()=>{
+  if(!confirm('Reset your simulated portfolio back to $10,000 cash?')) return;
+  portfolio = {cash:10000, holdings:{}};
+  savePortfolio(); renderAll();
+});
+
+function renderHoldings(){
+  const rows = Object.entries(portfolio.holdings);
+  const body = document.getElementById('holdingsBody');
+  if(rows.length===0){ body.innerHTML = '<tr><td colspan="5" class="msg-empty">No positions yet — buy something on the left.</td></tr>'; }
+  else{
+    body.innerHTML = rows.map(([sym,h])=>{
+      const a = findAsset(sym); if(!a) return '';
+      const pnl = (a.price-h.avgCost)*h.qty;
+      const cls = pnl>=0?'up':'down';
+      return `<tr><td class="sym">${sym}</td><td class="mono">${h.qty}</td><td class="mono">${fmt(h.avgCost)}</td><td class="mono">${fmt(a.price)}</td><td class="mono ${cls}">${pnl>=0?'+':''}${fmt(Math.abs(pnl))}</td></tr>`;
+    }).join('');
+  }
+  const holdVal = rows.reduce((s,[sym,h])=>{ const a=findAsset(sym); return s+(a?a.price*h.qty:0); },0);
+  const equity = portfolio.cash + holdVal;
+  const pnlTotal = equity - 10000;
+  document.getElementById('statCash').textContent = fmt(portfolio.cash);
+  document.getElementById('statHold').textContent = fmt(holdVal);
+  document.getElementById('statEquity').textContent = fmt(equity);
+  const pnlEl = document.getElementById('statPnl');
+  pnlEl.textContent = (pnlTotal>=0?'+':'')+fmt(Math.abs(pnlTotal));
+  pnlEl.className = 'val mono '+(pnlTotal>=0?'up':'down');
+}
+
+function renderAll(){ renderMarketTable(); renderHoldings(); }
+
+setInterval(tickMarket, 2200);
+loadPortfolio();
+renderTicker(); renderMarketTable();
+
+/* ---- TradingView widget ---- */
+let tvLoaded = false;
+function initTVWidget(){
+  const a = findAsset(selectedSym) || MARKETS.stocks[0];
+  const container = document.getElementById('tv_chart');
+  container.innerHTML = '';
+  function build(){
+    new TradingView.widget({
+      autosize: true,
+      symbol: a.tv,
+      interval: "60",
+      timezone: "Etc/UTC",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      toolbar_bg: "#151F2E",
+      enable_publishing: false,
+      hide_top_toolbar: false,
+      save_image: false,
+      container_id: "tv_chart"
+    });
+  }
+  if(!tvLoaded){
+    const s = document.createElement('script');
+    s.src = "https://s3.tradingview.com/tv.js";
+    s.onload = ()=>{ tvLoaded = true; build(); };
+    document.body.appendChild(s);
+  } else { build(); }
+}
+
+/* ================= GAMES ================= */
+document.getElementById('gameTabs').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#gameTabs button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  ['budget','biz','compound'].forEach(g=>{
+    document.getElementById('game-'+g).style.display = (g===b.dataset.g)?'block':'none';
+  });
+});
+
+/* ---- Game 1: Budget Survivor ---- */
+const BUDGET_INCOME = 4200;
+const BUDGET_CATS = [
+  {key:'rent', label:'Rent & utilities', def:1400, max:2200},
+  {key:'food', label:'Food & groceries', def:500, max:1000},
+  {key:'transport', label:'Transport', def:250, max:600},
+  {key:'fun', label:'Wants & fun', def:400, max:1200},
+  {key:'savings', label:'Savings', def:650, max:2000}
+];
+let budgetState = null;
+function budgetInit(){
+  budgetState = { month:0, savings:0, alloc:{}, log:[], history:[0] };
+  BUDGET_CATS.forEach(c=>budgetState.alloc[c.key]=c.def);
+  renderBudgetSliders();
+  renderBudgetChart();
+  document.getElementById('budgetLog').innerHTML='';
+  document.getElementById('budgetMonthLbl').textContent = 'Month 0 / 12';
+}
+function renderBudgetSliders(){
+  const wrap = document.getElementById('budgetSliders');
+  wrap.innerHTML = BUDGET_CATS.map(c=>`
+    <div class="slider-row">
+      <label>${c.label} <b id="bLbl_${c.key}">$${budgetState.alloc[c.key]}</b></label>
+      <input type="range" min="0" max="${c.max}" step="25" value="${budgetState.alloc[c.key]}" data-key="${c.key}" class="budgetSlider">
+    </div>`).join('') + `<div style="color:var(--text-dim);font-size:12.5px;margin-top:4px" id="budgetTotalLbl"></div>`;
+  updateBudgetTotal();
+  wrap.querySelectorAll('.budgetSlider').forEach(s=>{
+    s.addEventListener('input', ()=>{
+      budgetState.alloc[s.dataset.key] = Number(s.value);
+      document.getElementById('bLbl_'+s.dataset.key).textContent = '$'+s.value;
+      updateBudgetTotal();
+    });
+  });
+}
+function updateBudgetTotal(){
+  const total = Object.values(budgetState.alloc).reduce((a,b)=>a+b,0);
+  const left = BUDGET_INCOME-total;
+  const el = document.getElementById('budgetTotalLbl');
+  el.textContent = `Allocated $${total} of $${BUDGET_INCOME} · ${left>=0?'$'+left+' unallocated':'OVER by $'+Math.abs(left)}`;
+  el.style.color = left<0 ? 'var(--loss)' : 'var(--text-dim)';
+}
+const BUDGET_EVENTS = [
+  {t:'Car needs a repair', amt:-380}, {t:'Friend\'s birthday dinner', amt:-60},
+  {t:'Small work bonus', amt:220}, {t:'Phone screen cracked', amt:-150},
+  {t:'Found a cheaper grocery route', amt:40}, {t:'Quiet month, no surprises', amt:0},
+  {t:'Medical co-pay', amt:-120}, {t:'Freelance gig on the side', amt:300},
+  {t:'Utility bill spiked (heatwave)', amt:-90}, {t:'Tax refund', amt:250}
+];
+function budgetNextMonth(){
+  if(budgetState.month>=12) return;
+  const total = Object.values(budgetState.alloc).reduce((a,b)=>a+b,0);
+  const overspend = Math.max(0, total-BUDGET_INCOME);
+  const ev = BUDGET_EVENTS[Math.floor(Math.random()*BUDGET_EVENTS.length)];
+  const netSavingsThisMonth = budgetState.alloc.savings - overspend + ev.amt;
+  budgetState.savings += netSavingsThisMonth;
+  budgetState.month++;
+  budgetState.history.push(budgetState.savings);
+  const line = document.createElement('div');
+  line.className = 'log-line ' + (netSavingsThisMonth>=0?'good':'bad');
+  line.textContent = `Month ${budgetState.month}: ${ev.t} (${ev.amt>=0?'+':''}$${ev.amt}) → savings change ${netSavingsThisMonth>=0?'+':''}$${netSavingsThisMonth.toFixed(0)}, balance $${budgetState.savings.toFixed(0)}`;
+  document.getElementById('budgetLog').prepend(line);
+  document.getElementById('budgetMonthLbl').textContent = `Month ${budgetState.month} / 12`;
+  renderBudgetChart();
+  if(budgetState.month>=12){
+    const result = document.createElement('div');
+    result.className='log-line';
+    result.style.color='var(--gold)';
+    result.textContent = budgetState.savings>=BUDGET_INCOME*2 ? '🏆 Year complete — strong saver!' : (budgetState.savings>=0 ? '✅ Year complete — you stayed positive.' : '⚠️ Year complete — you ended in the red. Try adjusting allocations next run.');
+    document.getElementById('budgetLog').prepend(result);
+  }
+}
+function renderBudgetChart(){
+  drawLineChart('budgetChart', budgetState.history, '#2FBF8F');
+}
+document.getElementById('budgetNext').addEventListener('click', budgetNextMonth);
+document.getElementById('budgetReset').addEventListener('click', budgetInit);
+budgetInit();
+
+/* ---- Game 2: Lemonade Stand ---- */
+let bizState = null;
+function bizInit(){
+  bizState = { day:0, cash:20, history:[20] };
+  document.getElementById('bizLog').innerHTML='';
+  document.getElementById('bizDayLbl').textContent = 'Day 0 / 10 · Cash $20.00';
+  drawLineChart('bizChart', bizState.history, '#E8B34D');
+}
+const bizPrice = document.getElementById('bizPrice');
+const bizCups = document.getElementById('bizCups');
+bizPrice.addEventListener('input', ()=>document.getElementById('bizPriceLbl').textContent='$'+Number(bizPrice.value).toFixed(2));
+bizCups.addEventListener('input', ()=>document.getElementById('bizCupsLbl').textContent=bizCups.value);
+function bizRunDay(){
+  if(bizState.day>=10) return;
+  const price = Number(bizPrice.value);
+  const cupsMade = Number(bizCups.value);
+  const weathers = [
+    {t:'Scorching hot day', mult:1.6}, {t:'Pleasant, mild day', mult:1.0},
+    {t:'Rainy day', mult:0.4}, {t:'Big local event nearby', mult:1.9}
+  ];
+  const w = weathers[Math.floor(Math.random()*weathers.length)];
+  const baseDemand = Math.round((3 - price*0.7) * 25 * w.mult);
+  const demand = Math.max(0, baseDemand + Math.round((Math.random()-0.5)*10));
+  const sold = Math.min(cupsMade, demand);
+  const revenue = sold*price;
+  const costs = cupsMade*0.30;
+  const profit = revenue - costs;
+  bizState.cash += profit;
+  bizState.day++;
+  bizState.history.push(bizState.cash);
+  const line = document.createElement('div');
+  line.className = 'log-line ' + (profit>=0?'good':'bad');
+  line.textContent = `Day ${bizState.day} (${w.t}): made ${cupsMade}, sold ${sold} at $${price.toFixed(2)} → revenue $${revenue.toFixed(2)}, cost $${costs.toFixed(2)}, profit ${profit>=0?'+':''}$${profit.toFixed(2)}. Cash: $${bizState.cash.toFixed(2)}`;
+  document.getElementById('bizLog').prepend(line);
+  document.getElementById('bizDayLbl').textContent = `Day ${bizState.day} / 10 · Cash $${bizState.cash.toFixed(2)}`;
+  drawLineChart('bizChart', bizState.history, '#E8B34D');
+  if(bizState.day>=10){
+    const result = document.createElement('div');
+    result.style.color='var(--gold)'; result.className='log-line';
+    result.textContent = bizState.cash>=60 ? '🏆 Excellent run — you found a pricing sweet spot!' : (bizState.cash>=20 ? '✅ You grew your starting cash.' : '⚠️ You lost money overall — try pricing closer to demand next time.');
+    document.getElementById('bizLog').prepend(result);
+  }
+}
+document.getElementById('bizRunDay').addEventListener('click', bizRunDay);
+document.getElementById('bizReset').addEventListener('click', bizInit);
+bizInit();
+
+/* ---- Game 3: Compound Machine ---- */
+const cInit = document.getElementById('cInit'), cMon = document.getElementById('cMon'),
+      cRate = document.getElementById('cRate'), cYears = document.getElementById('cYears');
+function fmtMoney(n){ return '$'+Math.round(n).toLocaleString(); }
+function computeCompound(){
+  const init = Number(cInit.value), monthly = Number(cMon.value), rate = Number(cRate.value)/100, years = Number(cYears.value);
+  const monthlyRate = rate/12;
+  let balance = init;
+  const history = [balance];
+  let contributed = init;
+  for(let m=1; m<=years*12; m++){
+    balance = balance*(1+monthlyRate) + monthly;
+    contributed += monthly;
+    if(m%12===0) history.push(balance);
+  }
+  document.getElementById('cInitLbl').textContent = fmtMoney(init);
+  document.getElementById('cMonLbl').textContent = fmtMoney(monthly);
+  document.getElementById('cRateLbl').textContent = rate*100+'%';
+  document.getElementById('cYearsLbl').textContent = years;
+  document.getElementById('cContrib').textContent = fmtMoney(contributed);
+  document.getElementById('cGrowth').textContent = fmtMoney(balance-contributed);
+  document.getElementById('cFinal').textContent = fmtMoney(balance);
+  drawLineChart('compChart', history, '#6C8CFF');
+}
+[cInit,cMon,cRate,cYears].forEach(el=>el.addEventListener('input', computeCompound));
+computeCompound();
+
+/* ---- shared line chart drawer ---- */
+function drawLineChart(id, data, color){
+  const svg = document.getElementById(id);
+  const w = svg.clientWidth || 600, h = svg.clientHeight || 180;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  if(data.length<2){ svg.innerHTML=''; return; }
+  const min = Math.min(...data, 0), max = Math.max(...data, 1);
+  const range = (max-min)||1;
+  const pad = 10;
+  const pts = data.map((v,i)=>{
+    const x = pad + (i/(data.length-1))*(w-pad*2);
+    const y = h-pad - ((v-min)/range)*(h-pad*2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const zeroY = h-pad - ((0-min)/range)*(h-pad*2);
+  svg.innerHTML = `
+    <line x1="0" y1="${zeroY.toFixed(1)}" x2="${w}" y2="${zeroY.toFixed(1)}" stroke="#2B3A4F" stroke-dasharray="4,4"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5"/>
+    ${data.map((v,i)=>{const x=pad+(i/(data.length-1))*(w-pad*2); const y=h-pad-((v-min)/range)*(h-pad*2); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${color}"/>`;}).join('')}
+  `;
+}
+
+/* ================= AI COACH ================= */
+const chatLog = document.getElementById('chat-log');
+let chatHistory = [];
+// 👉 Paste your own Cloudflare Worker URL here once you've deployed it (see setup guide).
+// Example: "https://cashglade-coach.yourname.workers.dev"
+const COACH_API_URL = "PASTE_YOUR_WORKER_URL_HERE";
+function addBubble(role, text){
+  const div = document.createElement('div');
+  div.className = 'bubble ' + (role==='user'?'user':'ai');
+  div.textContent = text;
+  chatLog.appendChild(div);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+addBubble('ai', "Hi! I'm your Cashglade coach. Ask me about saving, investing, budgeting, or how any of the markets in the Simulate tab actually work.");
+
+async function sendChat(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+
+  if(!COACH_API_URL || COACH_API_URL.indexOf('PASTE_YOUR_WORKER_URL_HERE') !== -1){
+    addBubble('user', text);
+    input.value='';
+    addBubble('ai', "The AI Coach isn't connected yet — the site owner needs to add a proxy server URL. See the setup guide for the two-step fix.");
+    return;
+  }
+
+  addBubble('user', text);
+  chatHistory.push({role:'user', content:text});
+  input.value='';
+  const thinking = document.createElement('div');
+  thinking.className='bubble ai'; thinking.textContent='…';
+  chatLog.appendChild(thinking); chatLog.scrollTop = chatLog.scrollHeight;
+  try{
+    const response = await fetch(COACH_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system: "You are the AI Coach inside Cashglade, a personal finance learning app. Explain saving, investing, budgeting, and markets (stocks, crypto, commodities, forex, futures) clearly and simply for beginners, using short concrete examples. Give general education only, never personalized financial advice or specific buy/sell recommendations. Keep answers concise and encouraging.",
+        messages: chatHistory
+      })
+    });
+    const data = await response.json();
+    if(data.error){ throw new Error(typeof data.error === 'string' ? data.error : (data.error.message||'Unknown error')); }
+    const textResponses = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\\n');
+    thinking.remove();
+    addBubble('ai', textResponses || "Sorry, I couldn't generate a response just now.");
+    chatHistory.push({role:'assistant', content: textResponses});
+  }catch(e){
+    thinking.remove();
+    addBubble('ai', "Something went wrong reaching the coach. Try again in a moment.");
+  }
+}
+document.getElementById('chatSend').addEventListener('click', sendChat);
+document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
+</script>
+</body>
+</html>
